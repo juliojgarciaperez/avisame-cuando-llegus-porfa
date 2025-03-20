@@ -123,7 +123,13 @@ app.post("/", (req, res) => {
 
   const id = uuid();
 
-  targets.push({ email, phone, latitude, longitude, id });
+  targets.push({
+    email,
+    phone: phone.startsWith("+34") ? phone : `+34${phone}`,
+    latitude,
+    longitude,
+    id,
+  });
 
   const msg = `Avisame cuando llegues porfapp!!
 
