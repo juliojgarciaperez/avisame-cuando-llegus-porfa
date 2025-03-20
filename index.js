@@ -177,7 +177,7 @@ app.post("/", (req, res) => {
   targets.push(target);
 
   res.redirect(
-    `https://sandbox.opengateway.telefonica.com/apigateway/authorize?response_type=code&state=NV_${id}&client_id=${CLIENT_ID}&scope=dpv%3AFraudPreventionAndDetection%number-verification-verify-read&redirect_uri=${APP_URL}/auth/cb`
+    `https://sandbox.opengateway.telefonica.com/apigateway/authorize?response_type=code&state=NV_${id}&client_id=${CLIENT_ID}&scope=dpv%3AFraudPreventionAndDetection%23number-verification-verify-read&redirect_uri=${APP_URL}/auth/cb`
   );
 });
 
