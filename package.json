@@ -1,0 +1,22 @@
+{
+  "name": "avisame-cuando-llegues-porfapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch --env-file=.env index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.8.4",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.10.0",
+    "qs": "^6.14.0",
+    "uuid": "^11.1.0"
+  }
+}

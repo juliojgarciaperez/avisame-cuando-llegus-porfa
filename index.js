@@ -1,0 +1,139 @@
+const express = require("express");
+const morgan = require("morgan");
+const uuid = require("uuid").v4;
+const axios = require("axios");
+const qs = require("qs");
+
+const app = express();
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+
+let targets = [];
+
+app.set("views", "./views");
+app.set("view engine", "ejs");
+
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
+
+function sendMail(target) {
+  console.log(
+    `Hola ${target.email}! ${target.phone} ha llegado a su destino! https://www.google.com/maps/search/?api=1&query=${target.latitude},${target.longitude}`
+  );
+
+  targets = targets.filter((t) => t.id !== target.id);
+}
+
+setInterval(() => {
+  targets.forEach((target) => {
+    console.log(
+      "Checking target",
+      target.phone,
+      target.latitude,
+      target.longitude
+    );
+
+    axios
+      .post(
+        "https://sandbox.opengateway.telefonica.com/apigateway/location/v0/verify",
+        {
+          ueId: {
+            msisdn: target.phone,
+          },
+          latitude: target.latitude,
+          longitude: target.longitude,
+          accuracy: 2,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${target.token}`,
+          },
+        }
+      )
+      .then((response) => {
+        const { verificationResult } = response.data;
+
+        console.log("Verification result", verificationResult);
+
+        if (verificationResult) {
+          sendMail(target);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  });
+}, 60 * 1000);
+
+app.get("/", (req, res) => {
+  res.render("index");
+});
+
+app.get("/auth/cb", (req, res) => {
+  const { code, state } = req.query;
+
+  const target = targets.find((target) => target.id === state);
+
+  const data = qs.stringify({
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: "http://localhost:3000/auth/cb",
+  });
+
+  axios
+    .post("https://sandbox.opengateway.telefonica.com/apigateway/token", data, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(
+          `${CLIENT_ID}:${CLIENT_SECRET}`
+        ).toString("base64")}`,
+      },
+    })
+    .then((response) => {
+      const token = response.data.access_token;
+
+      console.log("save toekn for target", target.id);
+
+      target.token = token;
+
+      res.render("success", { target });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.render("error");
+    });
+});
+
+app.get("/:id/avisapp", (req, res) => {
+  const { id } = req.params;
+  const target = targets.find((target) => target.id === id);
+
+  if (!target) {
+    res.render("error", { message: "Target not found" });
+  }
+
+  res.redirect(
+    `https://sandbox.opengateway.telefonica.com/apigateway/authorize?response_type=code&state=${id}&client_id=${CLIENT_ID}&scope=dpv%3AFraudPreventionAndDetection%23device-location-read&redirect_uri=http://localhost:3000/auth/cb`
+  );
+});
+
+app.post("/", (req, res) => {
+  const { email, phone, latitude, longitude } = req.body;
+
+  const id = uuid();
+
+  targets.push({ email, phone, latitude, longitude, id });
+
+  const msg = `Avisame cuando llegues porfapp!!
+
+Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${latitude}, ${longitude}.
+
+http://localhost:3000/${id}/avisapp
+`;
+
+  res.redirect(`https://wa.me/+34646526113?text=${msg}`);
+});
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Server is running on port 3000");
+});
