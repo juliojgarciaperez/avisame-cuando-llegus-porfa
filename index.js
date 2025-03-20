@@ -155,6 +155,11 @@ ${APP_URL}/${target.id}/avisapp
     });
 });
 
+app.delete("/", (req, res) => {
+  targets = [];
+  res.json({ message: "Targets deleted" });
+});
+
 app.get("/:id/avisapp", (req, res) => {
   const { id } = req.params;
   const target = targets.find((target) => target.id === id);
