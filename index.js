@@ -139,7 +139,7 @@ app.post("/", (req, res) => {
 
   targets.push(target);
 
-  const msg = `Avisame cuando llegues porfapp!!
+  const msg = `Avísame cuando llegues porfapp!!
 
 Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${latitude}, ${longitude}.
 
