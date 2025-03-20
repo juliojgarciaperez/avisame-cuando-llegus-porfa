@@ -123,13 +123,15 @@ app.post("/", (req, res) => {
 
   const id = uuid();
 
-  targets.push({
+  const target = {
     email,
     phone: phone.startsWith("+34") ? phone : `+34${phone}`,
     latitude,
     longitude,
     id,
-  });
+  };
+
+  targets.push(target);
 
   const msg = `Avisame cuando llegues porfapp!!
 
@@ -138,7 +140,7 @@ Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${lat
 ${APP_URL}/${id}/avisapp
 `;
 
-  res.redirect(`https://wa.me/+34646526113?text=${msg}`);
+  res.redirect(`https://wa.me/+34${target.phone}?text=${msg}`);
 });
 
 app.listen(process.env.PORT || 3000, () => {
