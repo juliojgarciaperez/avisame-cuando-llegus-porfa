@@ -80,11 +80,11 @@ app.get("/", (req, res) => {
 });
 
 app.get("/auth/cb", (req, res) => {
-  const { code, state, error } = req.query;
+  const { code, state, error, error_description } = req.query;
 
   if (error) {
     console.error(error);
-    return res.render("error");
+    return res.render("error", { error, error_description });
   }
 
   const target = targets.find(
