@@ -8,6 +8,7 @@ const app = express();
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const APP_URL = process.env.APP_URL;
 
 let targets = [];
 
@@ -78,7 +79,7 @@ app.get("/auth/cb", (req, res) => {
   const data = qs.stringify({
     grant_type: "authorization_code",
     code,
-    redirect_uri: "http://localhost:3000/auth/cb",
+    redirect_uri: "${APP_URL}/auth/cb",
   });
 
   axios
@@ -113,7 +114,7 @@ app.get("/:id/avisapp", (req, res) => {
   }
 
   res.redirect(
-    `https://sandbox.opengateway.telefonica.com/apigateway/authorize?response_type=code&state=${id}&client_id=${CLIENT_ID}&scope=dpv%3AFraudPreventionAndDetection%23device-location-read&redirect_uri=http://localhost:3000/auth/cb`
+    `https://sandbox.opengateway.telefonica.com/apigateway/authorize?response_type=code&state=${id}&client_id=${CLIENT_ID}&scope=dpv%3AFraudPreventionAndDetection%23device-location-read&redirect_uri=${APP_URL}/auth/cb`
   );
 });
 
@@ -128,7 +129,7 @@ app.post("/", (req, res) => {
 
 Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${latitude}, ${longitude}.
 
-http://localhost:3000/${id}/avisapp
+${APP_URL}/${id}/avisapp
 `;
 
   res.redirect(`https://wa.me/+34646526113?text=${msg}`);
