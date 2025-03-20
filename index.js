@@ -79,7 +79,7 @@ app.get("/auth/cb", (req, res) => {
   const data = qs.stringify({
     grant_type: "authorization_code",
     code,
-    redirect_uri: "${APP_URL}/auth/cb",
+    redirect_uri: `${APP_URL}/auth/cb`,
   });
 
   axios
