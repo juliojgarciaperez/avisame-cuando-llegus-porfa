@@ -140,7 +140,7 @@ Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${lat
 ${APP_URL}/${id}/avisapp
 `;
 
-  res.redirect(`https://wa.me/+34${target.phone}?text=${msg}`);
+  res.redirect(`https://wa.me/${target.phone}?text=${msg}`);
 });
 
 app.listen(process.env.PORT || 3000, () => {
