@@ -19,6 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 function sendMail(target) {
+  console.log(`Send mail:`);
+
   console.log(
     `Hola ${target.email}! ${target.phone} ha llegado a su destino! https://www.google.com/maps/search/?api=1&query=${target.latitude},${target.longitude}`
   );
@@ -33,6 +35,10 @@ setInterval(() => {
       target.phone,
       target.latitude,
       target.longitude
+    );
+
+    console.log(
+      "POST https://sandbox.opengateway.telefonica.com/apigateway/location/v0/verify"
     );
 
     axios
