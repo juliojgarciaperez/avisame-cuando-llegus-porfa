@@ -60,13 +60,21 @@
         <div class="mb-3">
           <label for="email" class="form-label">¿Dónde te avisamos?</label>
           <input
-            name="email"
-            type="email"
             class="form-control"
-            id="exampleFormControlInput1"
-            placeholder="name@example.com"
+            type="tel"
+            id="email"
+            name="email"
+            placeholder="601234567"
             required
           />
+
+          <div id="emailHelp" class="form-text">
+            Validaremos que es tu número gracias a
+            <a
+              href="https://opengateway.telefonica.com/apis/number-verification"
+              >Number Verification</a
+            >
+          </div>
         </div>
 
         <div class="mb-3">

@@ -29,48 +29,50 @@ function sendMail(target) {
 }
 
 setInterval(() => {
-  targets.forEach((target) => {
-    console.log(
-      "Checking target",
-      target.phone,
-      target.latitude,
-      target.longitude
-    );
+  targets
+    .filter((t) => t.enabled)
+    .forEach((target) => {
+      console.log(
+        "Checking target",
+        target.phone,
+        target.latitude,
+        target.longitude
+      );
 
-    console.log(
-      "POST https://sandbox.opengateway.telefonica.com/apigateway/location/v0/verify"
-    );
+      console.log(
+        "POST https://sandbox.opengateway.telefonica.com/apigateway/location/v0/verify"
+      );
 
-    axios
-      .post(
-        "https://sandbox.opengateway.telefonica.com/apigateway/location/v0/verify",
-        {
-          ueId: {
-            msisdn: target.phone,
+      axios
+        .post(
+          "https://sandbox.opengateway.telefonica.com/apigateway/location/v0/verify",
+          {
+            ueId: {
+              msisdn: target.phone,
+            },
+            latitude: target.latitude,
+            longitude: target.longitude,
+            accuracy: 2,
           },
-          latitude: target.latitude,
-          longitude: target.longitude,
-          accuracy: 2,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${target.token}`,
-          },
-        }
-      )
-      .then((response) => {
-        const { verificationResult } = response.data;
+          {
+            headers: {
+              Authorization: `Bearer ${target.token}`,
+            },
+          }
+        )
+        .then((response) => {
+          const { verificationResult } = response.data;
 
-        console.log("Verification result", verificationResult);
+          console.log("Verification result", verificationResult);
 
-        if (verificationResult) {
-          sendMail(target);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  });
+          if (verificationResult) {
+            sendMail(target);
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
 }, 60 * 1000);
 
 app.get("/", (req, res) => {
@@ -78,9 +80,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/auth/cb", (req, res) => {
-  const { code, state } = req.query;
+  const { code, state, error } = req.query;
 
-  const target = targets.find((target) => target.id === state);
+  if (error) {
+    console.error(error);
+    return res.render("error");
+  }
+
+  const target = targets.find(
+    (target) => target.id === state || `NV_${target.id}` === state
+  );
 
   const data = qs.stringify({
     grant_type: "authorization_code",
@@ -99,11 +108,38 @@ app.get("/auth/cb", (req, res) => {
     .then((response) => {
       const token = response.data.access_token;
 
-      console.log("save token for target", target.id);
+      if (state.startsWith("NV_")) {
+        axios
+          .post(
+            "https://sandbox.opengateway.telefonica.com/apigateway/number-verification/v0/verify",
+            {
+              phoneNumber: target.email,
+            }
+          )
+          .then((response) => {
+            if (response.data.devicePhoneNumberVerified) {
+              const msg = `Avísame cuando llegues porfapp!!
 
-      target.token = token;
+Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${target.latitude}, ${target.longitude}.
 
-      res.render("success", { target });
+${APP_URL}/${id}/avisapp
+`;
+
+              return res.redirect(`https://wa.me/${target.phone}?text=${msg}`);
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+            res.render("error");
+          });
+      } else {
+        console.log("save token for target", target.id);
+
+        target.token = token;
+        target.enabled = true;
+
+        res.render("success", { target });
+      }
     })
     .catch((error) => {
       console.error(error);
@@ -130,23 +166,19 @@ app.post("/", (req, res) => {
   const id = uuid();
 
   const target = {
-    email,
+    email: email.startsWith("+34") ? email : `+34${email}`,
     phone: phone.startsWith("+34") ? phone : `+34${phone}`,
     latitude,
     longitude,
     id,
+    enabled: false,
   };
 
   targets.push(target);
 
-  const msg = `Avísame cuando llegues porfapp!!
-
-Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${latitude}, ${longitude}.
-
-${APP_URL}/${id}/avisapp
-`;
-
-  res.redirect(`https://wa.me/${target.phone}?text=${msg}`);
+  res.redirect(
+    `https://sandbox.opengateway.telefonica.com/apigateway/authorize?response_type=code&state=NV_${id}&client_id=${CLIENT_ID}&scope=dpv%3AFraudPreventionAndDetection%number-verification-verify-read&redirect_uri=${APP_URL}/auth/cb`
+  );
 });
 
 app.listen(process.env.PORT || 3000, () => {
