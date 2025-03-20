@@ -93,7 +93,7 @@ app.get("/auth/cb", (req, res) => {
     .then((response) => {
       const token = response.data.access_token;
 
-      console.log("save toekn for target", target.id);
+      console.log("save token for target", target.id);
 
       target.token = token;
 
