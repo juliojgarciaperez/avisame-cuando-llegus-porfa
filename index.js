@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 function sendMail(target) {
-  console.log(`Send mail:`);
+  console.log(`Send SMS:`);
 
   console.log(
     `Hola ${target.email}! ${target.phone} ha llegado a su destino! https://www.google.com/maps/search/?api=1&query=${target.latitude},${target.longitude}`
@@ -127,7 +127,7 @@ app.get("/auth/cb", (req, res) => {
 
 Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${target.latitude}, ${target.longitude}.
 
-${APP_URL}/${id}/avisapp
+${APP_URL}/${target.id}/avisapp
 `;
 
               return res.redirect(`https://wa.me/${target.phone}?text=${msg}`);
