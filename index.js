@@ -114,6 +114,11 @@ app.get("/auth/cb", (req, res) => {
             "https://sandbox.opengateway.telefonica.com/apigateway/number-verification/v0/verify",
             {
               phoneNumber: target.email,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
           )
           .then((response) => {
