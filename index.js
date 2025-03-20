@@ -123,19 +123,22 @@ app.get("/auth/cb", (req, res) => {
           )
           .then((response) => {
             if (response.data.devicePhoneNumberVerified) {
-              const msg = `Avísame cuando llegues porfapp!!
+            } else {
+              res.render("error");
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+          })
+          .finally(() => {
+            const msg = `Avísame cuando llegues porfapp!!
 
 Visita el siguiente enlace para avisarme automáticamente cuando llegues a ${target.latitude}, ${target.longitude}.
 
 ${APP_URL}/${target.id}/avisapp
 `;
 
-              return res.redirect(`https://wa.me/${target.phone}?text=${msg}`);
-            }
-          })
-          .catch((error) => {
-            console.error(error);
-            res.render("error");
+            return res.redirect(`https://wa.me/${target.phone}?text=${msg}`);
           });
       } else {
         console.log("save token for target", target.id);
