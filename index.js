@@ -73,7 +73,7 @@ setInterval(() => {
           console.error(error);
         });
     });
-}, 60 * 1000);
+}, 20 * 1000);
 
 app.get("/", (req, res) => {
   res.render("index");
